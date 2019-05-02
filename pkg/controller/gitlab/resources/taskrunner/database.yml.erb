@@ -1,0 +1,9 @@
+production:
+  adapter: postgresql
+  encoding: unicode
+  database: "postgres"
+  pool: 10
+  username: <%= File.read("/etc/gitlab/postgres/username") %>
+  password: <%= File.read("/etc/gitlab/postgres/password") %>
+  host: "<%= File.read('/etc/gitlab/postgres/endpoint') %>"
+  port: 5432

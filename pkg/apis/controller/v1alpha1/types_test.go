@@ -77,6 +77,7 @@ func TestStorageGitLab(t *testing.T) {
 	// Test Delete
 	g.Expect(c.Delete(context.TODO(), fetched)).NotTo(gomega.HaveOccurred())
 	g.Expect(c.Get(context.TODO(), testKey, fetched)).To(gomega.HaveOccurred())
+
 }
 
 const (

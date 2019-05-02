@@ -21,8 +21,13 @@ import (
 	"testing"
 
 	xpcorev1alpha1 "github.com/crossplaneio/crossplane/pkg/apis/core/v1alpha1"
+	xpworkloadv1alpha1 "github.com/crossplaneio/crossplane/pkg/apis/workload/v1alpha1"
 	"github.com/go-test/deep"
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -50,7 +55,9 @@ var (
 )
 
 func init() {
-	_ = controller.AddToScheme(scheme.Scheme)
+	if err := controller.AddToScheme(scheme.Scheme); err != nil {
+		panic(err)
+	}
 }
 
 func TestReconciler_Reconcile(t *testing.T) {
@@ -112,6 +119,98 @@ func TestReconciler_Reconcile(t *testing.T) {
 			}
 			if diff := deep.Equal(got, tt.want.res); diff != nil {
 				t.Errorf("Reconciler.Reconcile() = %v, want %v\n%s", got, tt.want, diff)
+			}
+		})
+	}
+}
+
+func Test_convert(t *testing.T) {
+	type want struct {
+		obj *unstructured.Unstructured
+		err error
+	}
+	tests := map[string]struct {
+		args runtime.Object
+		want want
+	}{
+		"EmptyConfigmap": {
+			args: &corev1.ConfigMap{},
+			want: want{
+				obj: &unstructured.Unstructured{
+					Object: map[string]interface{}{
+						"metadata": map[string]interface{}{
+							"creationTimestamp": nil,
+						},
+					},
+				},
+			},
+		},
+		"Secret Service": {
+			args: &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: testNamespace,
+					Name:      testName,
+				},
+				Data: map[string][]byte{
+					"foo": []byte("bar"),
+				},
+			},
+			want: want{
+				obj: &unstructured.Unstructured{
+					Object: map[string]interface{}{
+						"metadata": map[string]interface{}{
+							"GetNamespace":      testNamespace,
+							"GetName":           testName,
+							"creationTimestamp": nil,
+						},
+						"data": map[string]interface{}{
+							"foo": "YmFy", // YmFy is base64 encoded "bar"
+						},
+					},
+				},
+			},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			got, err := convert(tt.args)
+			if diff := deep.Equal(err, tt.want.err); diff != nil {
+				t.Errorf("convert() error = %v, wantErr %v\n%s", err, tt.want.err, diff)
+				return
+			}
+			if diff := cmp.Diff(got, tt.want.obj); diff != "" {
+				t.Errorf("convert() = %v, want %v\n%s", got, tt.want.obj, diff)
+			}
+		})
+	}
+}
+
+func TestSharedSecrets(t *testing.T) {
+	type args struct {
+		ns   string
+		name string
+	}
+	type want struct {
+		app *xpworkloadv1alpha1.KubernetesApplication
+		err error
+	}
+	tests := map[string]struct {
+		args args
+		want want
+	}{
+		"default": {
+			args: args{ns: testNamespace, name: testName},
+			want: want{app: &xpworkloadv1alpha1.KubernetesApplication{}},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			got, err := SharedSecretsApp(tt.args.ns, tt.args.name)
+			if diff := cmp.Diff(err, tt.want.err); diff != "" {
+				t.Errorf("SharedSecrets() error %s", diff)
+			}
+			if diff := cmp.Diff(got, tt.want.app); diff != "" {
+				t.Errorf("SharedSecrets() %s", diff)
 			}
 		})
 	}

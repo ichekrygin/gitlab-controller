@@ -1,0 +1,100 @@
+production: &base
+  gitlab:
+    host: gitlab-{{.HostSuffix}}.upbound.app
+    https: true
+    trusted_proxies:
+    time_zone: "UTC"
+    email_from: example@example.com
+    email_display_name: GitLab
+    email_reply_to: noreply@example.com
+    email_subject_suffix: ''
+    default_projects_features:
+      issues: true
+      merge_requests: true
+      wiki: true
+      snippets: true
+      builds: true
+      container_registry: true
+  incoming_email:
+    enabled: false
+
+  artifacts:
+    enabled: true
+  lfs:
+    enabled: true
+    object_store:
+      enabled: true
+      remote_directory: gitlab-{{.HostSuffix}}-lfs
+      direct_upload: true
+      background_upload: false
+      proxy_download: true
+      connection: <%= YAML.load_file("/etc/gitlab/objectstorage/lfs").to_json() %>
+  packages:
+    enabled: true
+    object_store:
+      enabled: true
+      remote_directory: gitlab-{{.HostSuffix}}-packages
+      direct_upload: true
+      background_upload: false
+      proxy_download: true
+      connection: <%= YAML.load_file("/etc/gitlab/objectstorage/packages").to_json() %>
+  external_diffs:
+    enabled:
+    object_store:
+      enabled: true
+      remote_directory:
+      direct_upload: true
+      background_upload: false
+      proxy_download: true
+  pseudonymizer:
+    manifest: config/pseudonymizer.yml
+    upload:
+      remote_directory: gitlab-{{.HostSuffix}}-pseudonymizer
+      connection: <%= YAML.load_file("/etc/gitlab/objectstorage/pseudonymizer").to_json() %>
+  pages:
+    enabled: false
+  ldap:
+    enabled: false
+
+  omniauth:
+    enabled: false
+    sync_profile_from_provider: []
+    sync_profile_attributes: ["email"]
+    allow_single_sign_on: ["saml"]
+    block_auto_created_users: true
+    auto_link_ldap_user: false
+    auto_link_saml_user: false
+    external_providers: []
+  gitaly:
+    client_path: /home/git/gitaly/bin
+    token: "<%= File.read('/etc/gitlab/gitaly/gitaly_token') %>"
+  repositories:
+    storages: # You must have at least a `default` storage path.
+      default:
+        path: /var/opt/gitlab/repo
+        gitaly_address: tcp://gitlab-{{.HostSuffix}}-gitaly-0.gitlab-{{.HostSuffix}}-gitaly:8075
+
+  backup:
+    path: "tmp/backups"   # Relative paths are relative to Rails.root (default: tmp/backups/)
+  gitlab_shell:
+    path: /home/git/gitlab-shell/
+    hooks_path: /home/git/gitlab-shell/hooks/
+    upload_pack: true
+    receive_pack: true
+    secret_file: /etc/gitlab/shell/.gitlab_shell_secret
+  workhorse:
+  git:
+    bin_path: /usr/bin/git
+  webpack:
+  monitoring:
+    ip_whitelist:
+      - 127.0.0.0/8
+    sidekiq_exporter:
+  extra:
+  ## Registry Integration
+  registry:
+    enabled: true
+    host: registry-{{.HostSuffix}}.upbound.app
+    api_url: http://gitlab-{{.HostSuffix}}-registry:5000
+    key: /etc/gitlab/registry/gitlab-registry.key
+    issuer: gitlab-issuer

@@ -25,6 +25,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const ApplicationName = "gitlab"
+
 // GitLabSpec defines the desired state of GitLab
 type GitLabSpec struct {
 	// Domain which will contain records to resolve gitlab, registry, and minio (if enabled) to the appropriate IP
@@ -73,6 +75,22 @@ type GitLab struct {
 	Status GitLabStatus `json:"status,omitempty"`
 }
 
+func (in *GitLab) GetApplicationName() string {
+	if sfx := in.Spec.HostSuffix; sfx != "" {
+		return ApplicationName + "-" + sfx
+	}
+	return ApplicationName
+}
+
+func (in *GitLab) GetProviderName() string {
+	return in.Spec.ProviderRef.Name
+}
+
+// IsReclaimDelete tests reclaim delete policy
+func (in *GitLab) IsReclaimDelete() bool {
+	return in.Spec.ReclaimPolicy == xpcorev1alpha1.ReclaimDelete
+}
+
 // SetReady a convenience method to set object status
 func (in *GitLab) SetReady() {
 	in.Status.SetReady()
@@ -116,6 +134,11 @@ func (in *GitLab) GetEndpoint() string {
 	}
 
 	return fmt.Sprintf("%s://gitlab%s.%s%s", protocol, suffix, in.Spec.Domain, port)
+}
+
+// SetEndpoint for this GitLab instance
+func (in *GitLab) SetEndpoint(ep string) {
+	in.Status.Endpoint = ep
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

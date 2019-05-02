@@ -45,15 +45,19 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:1814c16647fff43a33d5b2d0fc7f0566d5eb1a025173a1e4222159edf78dda21"
+  branch = "master"
+  digest = "1:357abe3a32d6cc986e172faf271797e65fef3c096ab45acc87d13732dd9d269a"
   name = "github.com/crossplaneio/crossplane"
   packages = [
+    "pkg/apis/cache/v1alpha1",
+    "pkg/apis/core",
     "pkg/apis/core/v1alpha1",
+    "pkg/apis/storage/v1alpha1",
+    "pkg/apis/workload/v1alpha1",
     "pkg/util",
   ]
   pruneopts = "UT"
-  revision = "bed87f6156097491b39b3deb67fb8ad23a401f61"
-  version = "v0.2.0"
+  revision = "ae31520bc1994b8a6e2005e7a78ea92ec9c63d9f"
 
 [[projects]]
   digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
@@ -162,6 +166,21 @@
   pruneopts = "UT"
   revision = "4030bb1f1f0c35b30ca7009e9ebd06849dd45306"
   version = "v1.0.0"
+
+[[projects]]
+  digest = "1:010d46ea3c1e730897e53058d1013a963f3f987675dda87df64f891b945281db"
+  name = "github.com/google/go-cmp"
+  packages = [
+    "cmp",
+    "cmp/cmpopts",
+    "cmp/internal/diff",
+    "cmp/internal/flags",
+    "cmp/internal/function",
+    "cmp/internal/value",
+  ]
+  pruneopts = "UT"
+  revision = "6f77996f0c42f7b84e5a2b252227263f93432e9b"
+  version = "v0.3.0"
 
 [[projects]]
   digest = "1:a6181aca1fd5e27103f9a920876f29ac72854df7345a39f3b01e61c8c94cc8af"
@@ -985,19 +1004,29 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/crossplaneio/crossplane/pkg/apis/cache/v1alpha1",
+    "github.com/crossplaneio/crossplane/pkg/apis/core",
     "github.com/crossplaneio/crossplane/pkg/apis/core/v1alpha1",
+    "github.com/crossplaneio/crossplane/pkg/apis/storage/v1alpha1",
+    "github.com/crossplaneio/crossplane/pkg/apis/workload/v1alpha1",
     "github.com/emicklei/go-restful",
     "github.com/go-logr/logr",
     "github.com/go-test/deep",
+    "github.com/google/go-cmp/cmp",
+    "github.com/google/go-cmp/cmp/cmpopts",
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
     "github.com/pkg/errors",
     "golang.org/x/net/context",
     "gopkg.in/alecthomas/kingpin.v2",
+    "k8s.io/api/batch/v1",
     "k8s.io/api/core/v1",
+    "k8s.io/api/rbac/v1",
     "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
     "k8s.io/apimachinery/pkg/api/errors",
+    "k8s.io/apimachinery/pkg/api/resource",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
+    "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured",
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
     "k8s.io/apimachinery/pkg/types",
