@@ -225,6 +225,12 @@ metadata:
   name: gitlab-demo
   namespace: default
 spec:
+  # cluster selector where this gitlab will be propagated to
+  clusterSelector:
+    matchLabels:
+      app: gitlab-demo-gke
+  # cluster namespace where to deploy gitlab components. defaults to "default"
+  clusterNamespace: gitlab
   # domain (required) is used for DNS records
   domain: upbound.io
   # email (required) is used in certmanager-issuer
